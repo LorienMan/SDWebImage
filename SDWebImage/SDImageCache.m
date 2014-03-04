@@ -143,6 +143,10 @@ BOOL ImageDataHasPNGPreffix(NSData *data) {
 #pragma mark ImageCache
 
 - (void)storeImage:(UIImage *)image recalculateFromImage:(BOOL)recalculate imageData:(NSData *)imageData forKey:(NSString *)key toDisk:(BOOL)toDisk {
+    [self storeImage:image recalculateFromImage:recalculate imageData:imageData forKey:key toDisk:toDisk usePNGIfPossible:YES];
+}
+
+- (void)storeImage:(UIImage *)image recalculateFromImage:(BOOL)recalculate imageData:(NSData *)imageData forKey:(NSString *)key toDisk:(BOOL)toDisk usePNGIfPossible:(BOOL)usePNGIfPossible {
     if (!image || !key) {
         return;
     }
@@ -162,10 +166,10 @@ BOOL ImageDataHasPNGPreffix(NSData *data) {
 
                 // We assume the image is PNG, in case the imageData is nil (i.e. if trying to save a UIImage directly),
                 // we will consider it PNG to avoid loosing the transparency
-                BOOL imageIsPng = YES;
+                BOOL imageIsPng = usePNGIfPossible;
 
                 // But if we have an image data, we will look at the preffix
-                if ([imageData length] >= [kPNGSignatureData length]) {
+                if ([imageData length] >= [kPNGSignatureData length] && usePNGIfPossible) {
                     imageIsPng = ImageDataHasPNGPreffix(imageData);
                 }
 
@@ -173,7 +177,7 @@ BOOL ImageDataHasPNGPreffix(NSData *data) {
                     data = UIImagePNGRepresentation(image);
                 }
                 else {
-                    data = UIImageJPEGRepresentation(image, (CGFloat)1.0);
+                    data = UIImageJPEGRepresentation(image, (CGFloat)0.8);
                 }
 #else
                 data = [NSBitmapImageRep representationOfImageRepsInArray:image.representations usingType: NSJPEGFileType properties:nil];
